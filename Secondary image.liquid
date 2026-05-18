@@ -1,0 +1,53 @@
+class SecondaryImageLoader {
+  constructor({
+    cardSelector = '.card-wrapper, .card',
+    imageSelector = 'img[data-secondary-image]:not([data-secondary-loaded="true"])',
+  } = {}) {
+    this.cardSelector = cardSelector;
+    this.imageSelector = imageSelector;
+    this.cache = new WeakMap();
+    this.boundHandler = this.handleEvent.bind(this);
+  }
+
+  init() {
+    document.addEventListener('pointerover', this.boundHandler, { passive: true });
+    document.addEventListener('focusin', this.boundHandler);
+    document.addEventListener('touchstart', this.boundHandler, { passive: true });
+  }
+
+  handleEvent(event) {
+    const target = event.target;
+    const card = target.closest(this.cardSelector);
+    if (!card) return;
+
+    let img = this.cache.get(card);
+
+    if (!img) {
+      img = card.querySelector(this.imageSelector);
+      this.cache.set(card, img);
+    }
+
+    if (!img || img.dataset.secondaryLoaded === 'true') return;
+
+    this.loadImage(img);
+  }
+
+  loadImage(img) {
+    if (img.dataset.srcset) img.srcset = img.dataset.srcset;
+    if (img.dataset.src) img.src = img.dataset.src;
+
+    img.dataset.secondaryLoaded = 'true';
+
+    delete img.dataset.srcset;
+    delete img.dataset.src;
+  }
+
+  destroy() {
+    document.removeEventListener('pointerover', this.boundHandler);
+    document.removeEventListener('focusin', this.boundHandler);
+    document.removeEventListener('touchstart', this.boundHandler);
+  }
+}
+
+const secondaryImageLoader = new SecondaryImageLoader();
+secondaryImageLoader.init();
