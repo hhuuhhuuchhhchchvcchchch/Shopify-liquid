@@ -1,0 +1,88 @@
+{%- when 'dropdown' -%}
+                {% if product.metafields.custom.drop_downs != blank %}
+                  {%- assign has_dropdown = true -%}
+                  {%- assign main_product_form_id = 'product-form-' | append: section.id -%}
+                  {% assign collect = product.metafields.custom.drop_down_variants.value %}
+                  {% for drop in product.metafields.custom.drop_downs.value %}
+                    {% assign label = drop.sample_text | default: 'Selection' %}
+
+                    <div class="product-form__input product-form__input--dropdown">
+                      <label class="form__label">{{ label }}</label>
+                      <div class="select">
+                        <select
+                          class="select__select"
+                          name="properties[{{ label | escape }}]"
+                          form="{{ main_product_form_id }}"
+                          required
+                        >
+                          <option value="" hidden selected>Please select</option>
+                          {% for item in collect.products limit: 60 %}
+                            {% if item.available %}
+                              <option value="{{ item.title | escape }}">
+                                {{ item.title }}
+                              </option>
+                            {% endif %}
+                          {% endfor %}
+                        </select>
+                        <span class="svg-wrapper">
+                          <svg class="icon icon-caret" viewBox="0 0 10 6">
+                            <path fill="currentColor" fill-rule="evenodd" d="M9.354.646a.5.5 0 0 0-.708 0L5 4.293 1.354.646a.5.5 0 0 0-.708.708l4 4a.5.5 0 0 0 .708 0l4-4a.5.5 0 0 0 0-.708" clip-rule="evenodd"></path>
+                          </svg>
+                        </span>
+                      </div>
+                    </div>
+                  {% endfor %}
+
+                  <script>
+                    document.addEventListener('DOMContentLoaded', () => {
+                      let buyButton = document.querySelectorAll('.requires-selection button')
+                      const productForm = document.getElementById('{{ main_product_form_id }}');
+                      if (productForm) {
+                        productForm.removeAttribute('novalidate');
+                      }
+                      const dropdowns = document.querySelectorAll('.select__select');
+
+                      const updateOptions = () => {
+                        const selectedValues = new Set();
+                        let allSelected = true;
+
+                        dropdowns.forEach((dropdown) => {
+                          if (dropdown.value === '') {
+                            allSelected = false;
+                          } else {
+                            selectedValues.add(dropdown.value);
+                          }
+                        });
+                        buyButton.forEach((btn) => {
+                          btn.disabled = !allSelected;
+                        });
+
+                        dropdowns.forEach((dropdown) => {
+                          const options = dropdown.querySelectorAll('option');
+
+                          options.forEach((option) => {
+                            if (option.value === '') return;
+                            if (selectedValues.has(option.value) && option.value !== dropdown.value) {
+                              option.disabled = true;
+                              option.classList.add('incart');
+                            } else {
+                              option.disabled = false;
+                              option.classList.remove('incart');
+                            }
+                          });
+                        });
+                      };
+                      updateOptions()
+                      dropdowns.forEach((dropdown) => {
+                        dropdown.addEventListener('change', updateOptions);
+                      });
+                    });
+                  </script>
+                  <style>
+                    .incart{
+                      background:rgba(196, 163, 3, 0.65);
+                      border-radius:20px;
+                      color: #fcfcfc;
+                    }
+                  </style>
+                {% endif %}
