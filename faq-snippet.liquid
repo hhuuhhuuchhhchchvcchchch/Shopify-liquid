@@ -1,0 +1,224 @@
+
+{% comment %}
+FAQ Section Component
+
+Description:
+- Renders a dynamic FAQ accordion using Shopify metafields.
+- Displays an optional heading and image alongside FAQs.
+- Each FAQ supports rich text answers via metafields.
+
+Example Usage:
+
+{% render 'faq',
+  faqsMetafield: product.metafields.custom.faqs,
+  faqsHeadings: "Frequently Asked Questions",
+  faqImages: product.featured_image,
+  section_id: 'product-faq'
+%}
+
+Expected Data Structure:
+- faqsMetafield.value → array of objects:
+  - question
+  - answer
+
+{% endcomment %}
+{% liquid
+  assign faqs = faqsMetafield.value
+  assign faqs_heading = faqsHeadings
+  assign faqs_image = faqImages
+  assign faq_section_id = section_id | default: sectionId | default: 'faq'
+%}
+
+{% if faqs and faqs.size > 0 %}
+  <style>
+    .faq-section {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+
+    .product_answer-faq {
+      margin: 0;
+    }
+
+    .faq-container {
+      width: 100%;
+      max-width: 1200px !important;
+      margin: 0 auto;
+    }
+
+    .faq-answer a {
+      text-decoration: none;
+      color: #918c00;
+      border-bottom: 1px dashed #757304;
+    }
+
+    .faq-heading {
+      font-size: 3rem;
+      margin-bottom: 20px;
+    }
+
+    .faq-question {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .faq-question h2 {
+      font-size: 2rem;
+    }
+
+    .faq-question h3 {
+      font-size: 2rem;
+    }
+
+    .faq-answer {
+      height: 0px;
+      overflow: hidden;
+      transition: height 0.5s ease-in-out;
+      -moz-transition: height 0.5s ease-in-out;
+      -ms-transition: height 0.5s ease-in-out;
+      -o-transition: height 0.5s ease-in-out;
+      -webkit-transition: height 0.5s ease-in-out;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .faq-container {
+      width: 100%;
+      max-width: 1200px !important;
+      margin: 0 auto;
+      display: flex;
+      gap: 40px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .faq-block {
+      flex: 1 1 50%;
+    }
+
+    .faq-heading {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 30px;
+      text-align: left;
+      color: #333;
+    }
+
+    .faq-icon svg {
+      width: 24px;
+      height: 24px;
+      transition: transform 0.3s;
+    }
+
+    .faq-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    }
+
+    @media screen and (max-width: 768px) {
+      .faq-container {
+        flex-direction: column;
+        gap: 20px;
+        padding: 2rem;
+      }
+
+      .faq-block {
+        flex: 1 1 80%;
+      }
+
+      .faq-heading {
+        font-size: 1.2rem;
+        text-align: center;
+      }
+
+      .product_question-faq h2 {
+        font-size: 1.3rem;
+      }
+
+      .faq-question h3 {
+        font-size: 1.8rem;
+      }
+
+      .faq-icon svg {
+        width: 10px !important;
+      }
+    }
+  </style>
+
+  <section id="faq-{{ faq_section_id }}" class="faq-section">
+    {% if faqs_heading != blank %}
+      <h2 class="faq-heading">{{ faqs_heading }}</h2>
+    {% endif %}
+
+    <div class="faq-container">
+      <div class="faq-block">
+        {% for faq in faqs %}
+          {% assign question = faq.question.value | default: faq.question %}
+          {% assign answer = faq.answer.value | default: faq.answer %}
+
+          <div class="faq-item">
+            <div class="faq-question">
+              <h3>{{ question | escape }}</h3>
+
+              <div class="faq-icon">
+                {{ 'icon-plus.svg' | inline_asset_content }}
+              </div>
+            </div>
+
+            <div class="faq-answer">
+              {% if faq.answer.value != blank %}
+                {{ faq.answer | metafield_tag }}
+              {% else %}
+                <div class="product_answer-faq">
+                  {{ answer }}
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      {% if faqs_image != blank %}
+        <div class="faq-image faq-block">
+          {{ faqs_image | image_url: width: 800 | image_tag }}
+        </div>
+      {% endif %}
+    </div>
+  </section>
+{% endif %}
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const iconPlus = `{{ 'icon-plus.svg' | inline_asset_content | strip_newlines }}`;
+    const iconMinus = `{{ 'icon-minus.svg' | inline_asset_content | strip_newlines }}`;
+    const faqItems = document.querySelectorAll('#faq-{{ faq_section_id }} .faq-item');
+
+    faqItems.forEach((faqItem) => {
+      const faqQuestion = faqItem.querySelector('.faq-question');
+      const faqAnswer = faqItem.querySelector('.faq-answer');
+
+      if (faqQuestion && faqAnswer) {
+        faqQuestion.addEventListener('click', () => {
+          if (faqAnswer.style.height && faqAnswer.style.height !== '0px') {
+            faqAnswer.style.height = '0px';
+            faqQuestion.querySelector('.faq-icon').innerHTML = iconPlus;
+          } else {
+            faqItems.forEach((item) => {
+              item.querySelector('.faq-answer').style.height = '0px';
+              item.querySelector('.faq-icon').innerHTML = iconPlus;
+            });
+
+            faqAnswer.style.height = faqAnswer.scrollHeight + 'px';
+            faqQuestion.querySelector('.faq-icon').innerHTML = iconMinus;
+          }
+        });
+      }
+    });
+  });
+</script>
