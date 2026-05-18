@@ -1,0 +1,42 @@
+<aside class="aside-panel">
+  {% for block in section.blocks %}
+    {% case block.type %}
+
+      {% when 'image' %}
+        <div class="blog-image block-{{ block.id }}">
+          <img src="{{ block.settings.image | image_url }}" alt="">
+        </div>
+
+      {% when 'icon' %}
+        <div class="blog-icon block-{{ block.id }}">
+          <img src="{{ block.settings.icon | image_url }}" alt="">
+        </div>
+
+      {% when 'text' %}
+        <div class="blog-text block-{{ block.id }}">
+          {{ block.settings.text }}
+        </div>
+
+      {% when 'divider' %}
+        <hr class="block-{{ block.id }}">
+
+      {% when 'richtext' %}
+        <div class="blog-richtext block-{{ block.id }}">
+          {{ block.settings.text }}
+        </div>
+
+      {% when 'icon_text' %}
+        <div class="blog-icon-text block-{{ block.id }}">
+          <img src="{{ block.settings.icon | image_url }}" alt="">
+          <span>{{ block.settings.text }}</span>
+        </div>
+
+      {% when 'icon_list' %}
+        <div class="blog-icon-list block-{{ block.id }}">
+          <img src="{{ block.settings.icon | image_url }}" alt="">
+          <span>{{ block.settings.text }}</span>
+        </div>
+
+    {% endcase %}
+  {% endfor %}
+</aside> 
