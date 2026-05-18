@@ -1,0 +1,84 @@
+<div class="video-hero-container">
+  {%- if section.settings.desktop_video != blank -%}
+    <video
+      class="hero-video desktop-video"
+      autoplay
+      loop
+      muted
+      playsinline
+      preload="metadata"
+      poster="{{ section.settings.desktop_cover | image_url: width: 1200  }}"
+    >
+      <source src="{{ section.settings.desktop_video.sources[1].url }}" type="video/mp4">
+    </video>
+  {%- endif -%}
+
+  {%- if section.settings.mobile_video != blank -%}
+    <video
+      class="hero-video mobile-video"
+      autoplay
+      loop
+      muted
+      playsinline
+      preload="metadata"
+      poster="{{ section.settings.phone_cover | image_url: width: 800 }}"
+    >
+      <source src="{{ section.settings.mobile_video.sources[1].url }}" type="video/mp4">
+    </video>
+  {%- endif -%}
+</div>
+
+<style>
+    .video-hero-container {
+        height:auto;
+    width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    overflow: hidden;
+    background: #000;
+  }
+      .hero-video {
+    width: 100%;
+    height: auto;
+  }
+      .desktop-video { display: none; }
+      .mobile-video { display: block; }
+
+  @media (min-width: 768px) {
+        .desktop-video { display: block; }
+        .mobile-video { display: none; }
+  }
+</style>
+{% schema %}
+{
+  "name": "Video Hero",
+  "settings": [
+    {
+      "type": "video",
+      "id": "desktop_video",
+      "label": "Desktop Video"
+    },
+    {
+      "type": "image_picker",
+      "id": "desktop_cover",
+      "label": "desktop cover image"
+    },
+    {
+      "type": "video",
+      "id": "mobile_video",
+      "label": "Mobile Video"
+    },
+    {
+      "type": "image_picker",
+      "id": "phone_cover",
+      "label": "phone cover image"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Video Hero"
+    }
+  ]
+}
+{% endschema %}
