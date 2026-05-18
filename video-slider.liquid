@@ -1,0 +1,153 @@
+<style>
+  .custom-video-slider-{{ section.id }} {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding:40px 20px;
+    gap:1rem;
+  }
+
+  .custom-video-{{ section.id }} {
+    display: flex;
+    width: 100%;
+    overflow-x: scroll;
+    gap: 2rem;
+  }
+
+
+  .custom-video {
+    flex: 0 0 20%;
+    aspect-ratio: 9/16;
+    position: relative;
+  }
+
+  .custom-video video {
+    border-radius:2rem;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border:1px solid #ddd;
+    transition: filter 0.2s ease;
+  }
+
+  .custom-video-{{ section.id }}::-webkit-scrollbar {
+    display: none;
+  }
+  .arrow{
+    height:20px;
+    width: 20px;
+    background:transparent;
+    border:none;
+  }
+  .icon{
+      height:20px;
+      width:20px;
+    }
+    @media screen and (min-width: 786px){
+      .custom-video-{{ section.id }}:hover .custom-video video:not(:hover){
+        filter:blur(10px);
+      }
+    }
+    @media screen and (max-width: 768px) {
+      .custom-video {
+        flex:0 0 70%;
+      }
+      .arrow{
+        display:none;
+      }
+    }
+</style>
+
+<section class="custom-video-slider-{{section.id}}">
+  <button class="arrow arrow-left-{{ section.id }}">
+    <svg
+      class="icon"
+      width="256px"
+      height="256px"
+      viewBox="0 0 1024 1024"
+      version="1.1"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="{{ section.settings.arrow_color }}"
+    >
+      <path d="M768 903.232l-50.432 56.768L256 512l461.568-448 50.432 56.768L364.928 512z" />
+    </svg>
+  </button>
+  <div class="custom-video-{{ section.id }}">
+    {% for block in section.blocks %}
+      <div class="custom-video">
+        {% comment %} {{ block.settings.display_video | video_tag: autoplay: true, loop: true, muted: true, controls: false  }} {% endcomment %}
+        <video
+          autoplay
+          loop
+          muted
+          playsinline
+          preload="metadata"
+        >
+          <source src="{{ block.settings.display_video.sources[1].url }}" type="video/mp4">
+        </video>
+      </div>
+    {% endfor %}
+  </div>
+  <button class="arrow arrow-right-{{ section.id }}">
+    <svg
+      class="icon"
+      width="256px"
+      height="256px"
+      viewBox="0 0 1024 1024"
+      version="1.1"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="{{ section.settings.arrow_color }}"
+    >
+      <g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="M256 120.768L306.432 64 768 512l-461.568 448L256 903.232 659.072 512z" fill="{{ section.settings.arrow_color }}"></path></g>
+    </svg>
+  </button>
+</section>
+
+<script src="{{ 'custom-category_slider.js' | asset_url }}" defer></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    section = document.querySelector('.custom-video-slider-{{section.id}}');
+    if (!section) return;
+
+    new Slider({
+      prev: section.querySelector('.arrow-left-{{ section.id }}'),
+      next: section.querySelector('.arrow-right-{{ section.id }}'),
+      slider: section.querySelector('.custom-video-{{ section.id }}'),
+      scrollAmount: 300,
+      time: 5,
+      auto: true,
+      autoSpeed: 100,
+    });
+  });
+</script>
+
+{% schema %}
+{
+  "name": "Video slider",
+  "settings": [],
+  "blocks": [
+    {
+      "name": "video picker",
+      "type": "block",
+      "settings": [
+        {
+          "type": "video",
+          "id": "display_video",
+          "label": "Add video"
+        },
+        {
+          "type": "url",
+          "id": "video_url",
+          "label": "Video Url"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Video slider"
+    }
+  ]
+}
+{% endschema %}
