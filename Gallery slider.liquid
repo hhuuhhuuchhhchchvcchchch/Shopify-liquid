@@ -1,0 +1,222 @@
+  {{ 'gallery-slider.css' | asset_url | stylesheet_tag }}
+  <section class="slider-section-{{ section.id }}">
+  <div><h2 class="heading">{{section.settings.heading }}</h2></div>
+  <div class="slider-wrapper">
+    <button class="arrow-button" id="prevBtn">&#10094;</button>
+    <div class="slider-container" id="sliderContainer">
+      <div class="slider-track" id="sliderTrack">
+        {% for block in section.blocks %}
+          <div class="image-item" {{ block.shopify_attributes }}>
+            <a href="{{ block.settings.link }}">
+              <picture>
+                {%- assign img = block.settings.image -%}
+                {% comment %} <source
+                  srcset="
+                    {{ img | image_url: width: 375, format: 'avif' }} 375w,
+                    {{ img | image_url: width: 550, format: 'avif' }} 550w,
+                    {{ img | image_url: width: 750, format: 'avif' }} 750w,
+                    {{ img | image_url: width: 1100, format: 'avif' }} 1100w,
+                    {{ img | image_url: width: 1500, format: 'avif' }} 1500w
+                  "
+                  sizes="(min-width: 1200px) 50vw, 100vw"
+                  type="image/avif"
+                > {% endcomment %}
+
+                {% comment %} <source
+                  srcset="
+                    {{ img | image_url: width: 375, format: 'webp' }} 375w,
+                    {{ img | image_url: width: 550, format: 'webp' }} 550w,
+                    {{ img | image_url: width: 750, format: 'webp' }} 750w,
+                    {{ img | image_url: width: 1100, format: 'webp' }} 1100w,
+                    {{ img | image_url: width: 1500, format: 'webp' }} 1500w
+                  "
+                  sizes="(min-width: 1200px) 50vw, 100vw"
+                  type="image/webp"
+                > {% endcomment %}
+
+              
+
+
+                {% comment %} <img
+                  src="{{ img | image_url: width: 800 }}"
+                  srcset="
+                    {{ img | image_url: width: 375 }} 375w,
+                    {{ img | image_url: width: 550 }} 550w,
+                    {{ img | image_url: width: 750 }} 750w,
+                    {{ img | image_url: width: 1100 }} 1100w,
+                    {{ img | image_url: width: 1500 }} 1500w
+                  "
+                  sizes="(min-width: 1200px) 50vw, 100vw"
+                  alt="{{ img.alt | escape }}"
+                  loading="lazy"
+                  fetchpriority="high"
+                  width=""
+                  height=""
+                > {% endcomment %}
+  {% if img != blank %}
+  <img
+                  src="{{ img | image_url: width: 800 }}"
+                  srcset="
+                    {{ img | image_url: width: 375 }} 375w,
+                    {{ img | image_url: width: 550 }} 550w,
+                    {{ img | image_url: width: 750 }} 750w,
+                    {{ img | image_url: width: 1100 }} 1100w,
+                    {{ img | image_url: width: 1500 }} 1500w
+                  "
+                  sizes="(min-width: 1200px) 50vw, 100vw"
+                  alt="{{ img.alt | escape }}"
+                  loading="lazy"
+  fetchpriority="low"
+  width="800"
+  height="{{ 800 | divided_by: img.aspect_ratio | round }}"
+                > 
+                {% endif %}
+
+              </picture>
+            </a>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+    <button class="arrow-button" id="nextBtn">&#10095;</button>
+  </div>
+  </section>
+
+  <script>
+    const track = document.getElementById('sliderTrack');
+    const container = document.getElementById('sliderContainer');
+    const prev = document.getElementById('prevBtn');
+    const next = document.getElementById('nextBtn');
+    const items = document.querySelectorAll('.image-item');
+
+    let currentIndex = 0;
+    let autoSlideInterval;
+
+    function itemsPerView() {
+      return window.innerWidth < 768 ? 3 : 5;
+    }
+
+    function slideTo(index) {
+      const itemWidth = items[0].offsetWidth;
+      const maxIndex = items.length - itemsPerView();
+      currentIndex = Math.max(0, Math.min(index, maxIndex));
+      track.style.transition = 'transform 0.3s ease';
+      track.style.transform = `translateX(-${currentIndex * itemWidth}px)`;
+    }
+
+    function nextSlide() {
+      if (currentIndex >= items.length - itemsPerView()) {
+        slideTo(0); // restart
+      } else {
+        slideTo(currentIndex + 1);
+      }
+    }
+
+    prev.onclick = () => slideTo(currentIndex - 1);
+    next.onclick = () => nextSlide();
+    window.addEventListener('resize', () => slideTo(currentIndex));
+
+    // Auto slide
+    function startAutoSlide() {
+      stopAutoSlide();
+      autoSlideInterval = setInterval(nextSlide, 2000);
+    }
+
+    function stopAutoSlide() {
+      clearInterval(autoSlideInterval);
+    }
+
+    container.addEventListener('mouseenter', stopAutoSlide);
+    container.addEventListener('mouseleave', startAutoSlide);
+
+    // --- DRAG/SWIPE SUPPORT ---
+    let startX = 0;
+    let isDragging = false;
+
+    function dragStart(x) {
+      isDragging = true;
+      startX = x;
+      track.style.transition = 'none';
+      stopAutoSlide();
+    }
+
+    function dragMove(x) {
+      if (!isDragging) return;
+      const dx = x - startX;
+      track.style.transform = `translateX(${-currentIndex * items[0].offsetWidth + dx}px)`;
+    }
+
+    function dragEnd(x) {
+      if (!isDragging) return;
+      isDragging = false;
+      const dx = x - startX;
+      if (dx > 50) slideTo(currentIndex - 1); // swipe right
+      else if (dx < -50) slideTo(currentIndex + 1); // swipe left
+      else slideTo(currentIndex);
+      startAutoSlide();
+    }
+
+    // Mouse
+    container.addEventListener('mousedown', (e) => dragStart(e.clientX));
+    container.addEventListener('mousemove', (e) => dragMove(e.clientX));
+    container.addEventListener('mouseup', (e) => dragEnd(e.clientX));
+    container.addEventListener('mouseleave', (e) => {
+      if (isDragging) dragEnd(e.clientX || startX);
+    });
+
+    // Touch
+    container.addEventListener('touchstart', (e) => dragStart(e.touches[0].clientX));
+    container.addEventListener('touchmove', (e) => dragMove(e.touches[0].clientX));
+    container.addEventListener('touchend', (e) => dragEnd(e.changedTouches[0].clientX));
+
+    slideTo(0);
+    startAutoSlide();
+  </script>
+  {% schema %}
+  {
+    "name": "Styled & Worn Slider",
+    "settings": [
+      {
+        "type": "text",
+        "id": "heading",
+        "label": "Heading",
+        "default": "STYLED & WORN"
+      },
+      {
+        "type": "range",
+        "id": "auto_speed",
+        "label": "Auto slide speed (seconds)",
+        "min": 1,
+        "max": 10,
+        "step": 1,
+        "default": 2
+      }
+    ],
+
+    "blocks": [
+      {
+        "type": "slide",
+        "name": "Slider Item",
+        "settings": [
+          {
+            "type": "image_picker",
+            "id": "image",
+            "label": "Select Image"
+          },
+          {
+            "type": "url",
+            "id": "link",
+            "label": "Product / Custom Link"
+          }
+        ]
+      }
+    ],
+
+    "presets": [
+      {
+        "name": "Gallery Slider"
+      }
+    ]
+  }
+  {% endschema %}
+
