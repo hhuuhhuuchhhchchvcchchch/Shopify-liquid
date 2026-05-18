@@ -1,0 +1,147 @@
+{% if popup %}
+  <div class="image-with-text__pop-up-banner-{{ section.id }}">
+    <div class="image-with-text__pop-up-banner-top-{{ section.id }}">
+      <button class="image-with-text__pop_up_cross">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+          <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+          <g id="SVGRepo_iconCarrier">
+            <path d="M19 5L4.99998 19M5.00001 5L19 19" stroke="#1c1c1c" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+          </g>
+        </svg>
+      </button>
+      <h1 class="image-with-text__pop-up-banner-text-{{ section.id }}">{{ popuptext }}</h1>
+      <div class="image"> </div>
+    </div>
+    {% render 'corporate-contact_snippet' %}
+  </div>
+
+  {% style %}
+              .image-with-text__pop-up-banner-text-{{ section.id }}{
+                font-size:{{popuptextsize}}rem;
+              }
+              .image-with-text__pop-up-banner-{{ section.id }} {
+              --inputs-border-width: 0px;
+              --inputs-border-opacity: 0;
+              --inputs-shadow-opacity: 0;
+            }
+
+              .image-with-text__pop-up-banner-top-{{ section.id }}{
+                display:flex;
+                justify-content: space-between;
+                width:100%;
+                align-items:center;
+              }
+                .image-with-text__pop_up_cross{
+                 border:none;
+                 background-color:transparent;
+                }
+                 .image-with-text__pop_up_cross svg{
+                   height:20px;
+                   width:20px;
+                 }
+                 .image-with-text__pop-up-banner-{{ section.id }} {
+                  display: flex;
+                  flex-direction: column;
+                  align-items:center;
+                  gap: 20px;
+                  position: fixed;
+
+                  top: 5vh;
+                  left: 50%;
+                  transform: translateX(-50%);
+
+                  width: 80%;
+                  max-width: {{popupwidth}}px;
+
+                  max-height: 90vh;
+                  height: auto;
+
+                  overflow-y: auto;
+                  overflow-x: hidden;
+
+                  z-index: 999999999;
+
+                  background: rgba(255, 238, 206, 0.87);
+                  padding: 40px;
+                  backdrop-filter: blur(10px);
+                  border-radius: 10px;
+
+                  opacity: 0;
+                  visibility: hidden;
+                  pointer-events: auto;
+
+                  transition: opacity 0.3s ease;
+                }
+                 .image-with-text__pop-up-banner-{{ section.id }}.active{
+                  opacity: 1;
+                  visibility:visible;
+                  pointer-events: auto;
+
+                 }
+                .image-with-text__pop-up-banner-{{ section.id }}::-webkit-scrollbar {
+                  display: none;
+                }
+                @media screen and (max-width: 768px) {
+                  .image-with-text__pop-up-banner-text-{{ section.id }} {
+                    font-size: calc({{ popuptextsize }} * 0.7rem);
+                  }
+                }
+  {% endstyle %}
+{% endif %}
+
+{%- when 'pop_up' -%}
+                  <button
+                    type="button"
+                    class="image-with-text__pop-up-button"
+                    data-pop-up-trigger
+                    {{ block.shopify_attributes }}
+                  >
+                    {{ block.settings.pop_up_text | escape }}
+                  </button>
+                  <div class="image"></div>
+                  <div></div>
+
+                  {% style %}
+                    .image-with-text__pop-up-button {
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        text-align:{{block.settings.text_alignment}};
+                        margin-top: 2rem;
+                        border: {{ block.settings.pop_up_border }}px solid {{ block.settings.pop_up_border_color }};
+                        border-radius: {{ block.settings.pop_up_border_radius }}px;
+                        font-weight:{{block.settings.pop_up_font_weight}};
+                        max-width: 100%;
+                        font-family: var(--font-body-family);
+                        min-height: {{ block.settings.pop_up_height }}px;
+                        padding: 0 {{block.settings.pop_up_width}}px;
+                        font-size: {{ block.settings.pop_up_text_size }}px;
+                        color: {{ block.settings.pop_up_color }};
+                        background: {{ block.settings.pop_up_bg }};
+                        cursor: pointer;
+                        transition:all 0.3s ease;
+                      }
+                    .image-with-text__pop-up-button:hover{
+                      background:{{block.settings.pop_up_hvr_bg}};
+                      color:{{block.settings.pop_up_hvr_color }};
+                    }
+                  {% endstyle %}
+
+                  <script>
+                    const openBtn = document.querySelector('.image-with-text__pop-up-button');
+                    const closeBtn = document.querySelector('.image-with-text__pop_up_cross');
+                    const popupBanner = document.querySelector('.image-with-text__pop-up-banner-{{ section.id }}');
+
+                    if (openBtn && popupBanner) {
+                      openBtn.addEventListener('click', () => {
+                        popupBanner.classList.add('active');
+                      });
+                    }
+
+                    if (closeBtn && popupBanner) {
+                      closeBtn.addEventListener('click', () => {
+                        popupBanner.classList.remove('active');
+                      });
+                    }
+                  </script>
