@@ -1,0 +1,102 @@
+{% assign pouch_handle = 'premium-packaging-pouch' %}
+{% assign pouch_product = all_products[pouch_handle] %}
+{% assign threshold = 200000 %}
+
+{% assign in_cart = false %}
+{% for item in cart.items %}
+  {% if item.product.handle == pouch_handle %}
+    {% assign in_cart = true %}
+  {% endif %}
+{% endfor %}
+
+<div class="upsell-container-{{ section.id }}">
+
+  {% if pouch_product %}
+
+    {% if cart.total_price >= threshold and in_cart == false %}
+
+      <h4>Congrats! You've unlocked the Premium Pouch offer.</h4>
+
+      <div class="upsell-wrapper">
+        <div class="pouch-left-wrapper">
+          <div class="pouch-image-wrapper">
+            {{ pouch_product.featured_image | image_url: width: 200 | image_tag: alt: pouch_product.title }}
+          </div>
+
+          <div class="price-container">
+            <span style="text-decoration: line-through; opacity: 0.6;">
+              {{ pouch_product.price | money }}
+            </span>
+            <span style="color: green; font-weight: bold; margin-left: 6px;">FREE</span>
+          </div>
+        </div>
+
+        {% form 'product', pouch_product, class: 'upsell-form' %}
+          <input type="hidden" name="id" value="{{ pouch_product.variants.first.id }}">
+          <input type="hidden" name="quantity" value="1">
+          <button type="submit" class="upsell-button">Add Free Pouch</button>
+        {% endform %}
+      </div>
+
+    {% else %}
+
+      {% assign remaining = threshold | minus: cart.total_price %}
+
+      <p class="upsell-hint">
+        Add {{ remaining | money }} more to unlock Premium Packaging!
+      </p>
+
+      <div class="upsell-wrapper">
+        <div class="pouch-left-wrapper">
+          <div class="pouch-image-wrapper">
+            {{ pouch_product.featured_image | image_url: width: 200 | image_tag: alt: pouch_product.title }}
+          </div>
+
+          <div class="price-container">
+            <span>{{ pouch_product.price | money }}</span>
+          </div>
+        </div>
+
+        {% form 'product', pouch_product, class: 'upsell-form' %}
+          <input type="hidden" name="id" value="{{ pouch_product.variants.first.id }}">
+          <input type="hidden" name="quantity" value="1">
+          <button type="submit" class="upsell-button">Add Premium Pouch</button>
+        {% endform %}
+      </div>
+
+    {% endif %}
+
+  {% endif %}
+
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.upsell-container-{{ section.id }} .upsell-form').forEach((form) => {
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        try {
+          const response = await fetch('/cart/add', {
+            method: 'POST',
+            body: new FormData(form),
+            headers: {
+              Accept: 'application/json'
+            }
+          });
+
+          const data = await response.json().catch(() => null);
+
+          if (!response.ok) {
+            return;
+          }
+
+          console.log('Added to cart:', data);
+
+        } catch (error) {
+          console.error('Network error:', error);
+        }
+      });
+    });
+  });
+</script>
